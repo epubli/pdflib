@@ -90,7 +90,7 @@ class PdfLibWrapper
     {
         $this->pdfLib->begin_document(
             '',
-            sprintf('compatibility=%s', $this->getPdfVersion($pdiDocument))
+            sprintf('compatibility=%.1f', $this->getPdfVersion($pdiDocument))
         );
     }
 
