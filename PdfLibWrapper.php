@@ -2,7 +2,8 @@
 
 namespace Epubli\Pdf\PdfLib;
 
-use Epubli\Exception\Exception;
+use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
+use Epubli\Pdf\PdfLib\PdfImport\Page as PdiPage;
 use PDFlib;
 
 /**
@@ -39,7 +40,7 @@ class PdfLibWrapper
     /**
      * @param string $inputPdf The PDF contents.
      * @param string $virtualFilename The filename for the PDFlib virtual file.
-     * @return int The handle to the PDI document.
+     * @return PdiDocument The PDI document.
      * @throws Exception if the PDI document could not be opened.
      */
     public function getPdiDocumentFromRawPdf($inputPdf, $virtualFilename)
@@ -50,27 +51,29 @@ class PdfLibWrapper
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
      * @param int $pageNumber
      * @return int|float
+     * @deprecated: Use OOP!
      */
-    public function getPageWidth($pdiDocument, $pageNumber = 1)
+    public function getPageWidth(PdiDocument $pdiDocument, $pageNumber = 1)
     {
         /** @var int|float $width */
-        $width = $this->pdfLib->pcos_get_number($pdiDocument, 'pages[' . ($pageNumber - 1) . ']/width');
+        $width = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pages[' . ($pageNumber - 1) . ']/width');
 
         return $width;
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
      * @param int $pageNumber
      * @return int|float
+     * @deprecated: Use OOP!
      */
-    public function getPageHeight($pdiDocument, $pageNumber = 1)
+    public function getPageHeight(PdiDocument $pdiDocument, $pageNumber = 1)
     {
         /** @var int|float $height */
-        $height = $this->pdfLib->pcos_get_number($pdiDocument, 'pages[' . ($pageNumber - 1) . ']/height');
+        $height = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pages[' . ($pageNumber - 1) . ']/height');
 
         return $height;
     }
@@ -84,31 +87,39 @@ class PdfLibWrapper
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
+     * TODO: Pass PDF version as parameter rather than the whole document since the former is what we actually need. Makes the interface much slimmer and self-explaining.
+     * TODO: I’m afraid usage of this method restrains this service from opening multiple documents at a time. NOT GOOD!
      */
-    public function beginDocument($pdiDocument)
+    public function beginDocument(PdiDocument $pdiDocument)
     {
         $this->pdfLib->begin_document(
             '',
-            sprintf('compatibility=%.1f', $this->getPdfVersion($pdiDocument))
+            sprintf('compatibility=%.1f', $this->getPdfVersion($pdiDocument->getHandle()))
         );
     }
 
-    public function getPdfVersion($pdiDocument)
+    /**
+     * @param PdiDocument $pdiDocument
+     * @return float|int
+     * @deprecated: Use OOP!
+     */
+    public function getPdfVersion(PdiDocument $pdiDocument)
     {
-        $pdiVersion = $this->pdfLib->pcos_get_number($pdiDocument, 'pdfversion');
+        $pdiVersion = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pdfversion');
         $version = max(self::PDF_MIN_VERSION, $pdiVersion);
         return $version/10;
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
      * @param string $virtualFilename
      * @param bool $endDocument
+     * @deprecated: Use OOP!
      */
-    public function closeDocument($pdiDocument, $virtualFilename, $endDocument = true)
+    public function closeDocument(PdiDocument $pdiDocument, $virtualFilename, $endDocument = true)
     {
-        $this->pdfLib->close_pdi_document($pdiDocument);
+        $this->pdfLib->close_pdi_document($pdiDocument->getHandle());
 
         $this->pdfLib->delete_pvf($virtualFilename);
 
@@ -118,32 +129,41 @@ class PdfLibWrapper
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
      * @return int
+     * @deprecated: Use OOP!
      */
-    public function getLastPageNumber($pdiDocument)
+    public function getLastPageNumber(PdiDocument $pdiDocument)
     {
-        $lastPageNumber = (int)$this->pdfLib->pcos_get_number($pdiDocument, self::NUMBER_OF_PAGES);
+        $lastPageNumber = (int)$this->pdfLib->pcos_get_number($pdiDocument->getHandle(), self::NUMBER_OF_PAGES);
         return $lastPageNumber;
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
      * @param int $pageNo
      * @param string $options
-     * @return mixed
+     * @return PdiPage
+     * @throws Exception
+     * @deprecated: Use OOP!
      */
-    public function openPdiPage($pdiDocument, $pageNo, $options = "")
+    public function openPdiPage(PdiDocument $pdiDocument, $pageNo, $options = "")
     {
-        return $this->pdfLib->open_pdi_page($pdiDocument, $pageNo, $options);
+        $handle = $this->pdfLib->open_pdi_page($pdiDocument->getHandle(), $pageNo, $options);
+
+        if (!$handle) {
+            $this->throwLastError();
+        }
+
+        return new PdiPage($this->pdfLib, $handle);
     }
 
     /**
-     * @param $pdiPage
+     * @param PdiPage $pdiPage
      */
-    public function closePdiPage($pdiPage)
+    public function closePdiPage(PdiPage $pdiPage)
     {
-        $this->pdfLib->close_pdi_page($pdiPage);
+        $this->pdfLib->close_pdi_page($pdiPage->getHandle());
     }
 
     /**
@@ -178,14 +198,16 @@ class PdfLibWrapper
     }
 
     /**
-     * @param $page
+     * Place an imported PDF page on the page subject to various options.
+     *
+     * @param PdiPage $page
      * @param int $xPos
      * @param int $yPos
      * @param string $options
      */
-    public function fitPdiPage($page, $xPos = 0, $yPos = 0, $options = self::ADJUST_PAGE)
+    public function fitPdiPage(PdiPage $page, $xPos = 0, $yPos = 0, $options = self::ADJUST_PAGE)
     {
-        $this->pdfLib->fit_pdi_page($page, $xPos, $yPos, $options);
+        $this->pdfLib->fit_pdi_page($page->getHandle(), $xPos, $yPos, $options);
     }
 
     /**
@@ -193,27 +215,28 @@ class PdfLibWrapper
      *
      * @param string $filename The filename (real file or PDFlib virtual file).
      * @param string $options PDFlib options
-     * @return int The handle to the PDI document.
+     * @return PdiDocument The PDI document.
      * @throws Exception if the PDI document could not be opened.
      */
     public function openPdiDocument($filename, $options = '')
     {
-        /** @var int $pdiHandle */
-        $pdiHandle = $this->pdfLib->open_pdi_document($filename, $options);
+        /** @var int $handle */
+        $handle = $this->pdfLib->open_pdi_document($filename, $options);
 
-        if (!$pdiHandle) {
-            throw new Exception($this->pdfLib->get_errmsg());
+        if (!$handle) {
+            $this->throwLastError();
         }
 
-        return $pdiHandle;
+        return new PdiDocument($this->pdfLib, $handle);
     }
 
     /**
-     * @param $pdiDocument
+     * @param PdiDocument $pdiDocument
+     * @deprecated: Use OOP!
      */
-    public function closePdiDocument($pdiDocument)
+    public function closePdiDocument(PdiDocument $pdiDocument)
     {
-        $this->pdfLib->close_pdi_document($pdiDocument);
+        $this->pdfLib->close_pdi_document($pdiDocument->getHandle());
     }
 
     /**
@@ -300,5 +323,13 @@ class PdfLibWrapper
     public function stroke()
     {
         $this->pdfLib->stroke();
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function throwLastError()
+    {
+        throw new Exception($this->getLastErrorMessage());
     }
 }
