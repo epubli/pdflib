@@ -119,7 +119,7 @@ class PdfLibWrapper
      */
     public function closeDocument(PdiDocument $pdiDocument, $virtualFilename, $endDocument = true)
     {
-        $this->pdfLib->close_pdi_document($pdiDocument->getHandle());
+        $pdiDocument->close();
 
         $this->pdfLib->delete_pvf($virtualFilename);
 
@@ -232,11 +232,11 @@ class PdfLibWrapper
 
     /**
      * @param PdiDocument $pdiDocument
-     * @deprecated: Use OOP!
+     * @deprecated: Use $pdiDocument->close();
      */
     public function closePdiDocument(PdiDocument $pdiDocument)
     {
-        $this->pdfLib->close_pdi_document($pdiDocument->getHandle());
+        $pdiDocument->close();
     }
 
     /**

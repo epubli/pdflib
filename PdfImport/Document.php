@@ -23,6 +23,11 @@ class Document
         $this->handle = $handle;
     }
 
+    public function __destruct()
+    {
+        $this->close();
+    }
+
     /**
      * Get the handle of this document.
      * @deprecated: We want to keep that handle private. Implement object-oriented methods instead.
@@ -30,5 +35,14 @@ class Document
     public function getHandle()
     {
         return $this->handle;
+    }
+
+    public function close()
+    {
+        if ($this->handle) {
+            $this->lib->close_pdi_document($this->handle);
+        }
+
+        $this->handle = null;
     }
 }
