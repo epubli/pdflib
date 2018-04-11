@@ -61,11 +61,37 @@ class Document
     }
 
     /**
-     * The PDF version of this Document as an integer (17 is for PDF 1.7).
+     * Get the PDF version of this Document as an integer (17 is for PDF 1.7).
      * @return int
      */
     public function getPdfVersion()
     {
         return (int)$this->lib->pcos_get_number($this->handle, 'pdfversion');
+    }
+
+    /**
+     * Get the page width of a certain page of this Document.
+     * @param int $pageNumber
+     * @return int|float
+     */
+    public function getPageWidth($pageNumber = 1)
+    {
+        /** @var int|float $width */
+        $width = $this->lib->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/width');
+
+        return $width;
+    }
+
+    /**
+     * Get the page height of a certain page of this Document.
+     * @param int $pageNumber
+     * @return int|float
+     */
+    public function getPageHeight($pageNumber = 1)
+    {
+        /** @var int|float $height */
+        $height = $this->lib->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/height');
+
+        return $height;
     }
 }

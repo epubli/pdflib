@@ -62,34 +62,6 @@ class PdfLibWrapper
     }
 
     /**
-     * @param PdiDocument $pdiDocument
-     * @param int $pageNumber
-     * @return int|float
-     * @deprecated Use OOP!
-     */
-    public function getPageWidth(PdiDocument $pdiDocument, $pageNumber = 1)
-    {
-        /** @var int|float $width */
-        $width = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pages[' . ($pageNumber - 1) . ']/width');
-
-        return $width;
-    }
-
-    /**
-     * @param PdiDocument $pdiDocument
-     * @param int $pageNumber
-     * @return int|float
-     * @deprecated Use OOP!
-     */
-    public function getPageHeight(PdiDocument $pdiDocument, $pageNumber = 1)
-    {
-        /** @var int|float $height */
-        $height = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pages[' . ($pageNumber - 1) . ']/height');
-
-        return $height;
-    }
-
-    /**
      * Create a new PDF file subject to various options.
      *
      * @param string $filename Absolute or relative name of the PDF output file to be generated. If
