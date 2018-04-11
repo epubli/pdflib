@@ -41,6 +41,63 @@ class PdfLibWrapper
     }
 
     /**
+     * Create a named virtual read-only file from data provided in memory.
+     *
+     * @param string $filename
+     * @param string $data
+     * @param string $options
+     * @return VirtualFile
+     * @throws Exception if the virtual file could not be created.
+     */
+    public function createVirtualFile($filename, $data, $options = '')
+    {
+        $file = VirtualFile::create($this->pdfLib, $filename, $data, $options);
+
+        return $file;
+    }
+
+    /**
+     * Open a disk-based or virtual PDF document and prepare it for later use.
+     *
+     * @param string|VirtualFile|\SplFileInfo $fileInfo An object convertible to a string that identifies a file (or PDFlib virtual file).
+     * @param string $options PDFlib options. See PDFLib API Reference, Options for PDF_open_pdi_document( ).
+     * @return PdiDocument The PDI document.
+     * @throws Exception if the PDI document could not be opened.
+     */
+    public function openPdiDocument($fileInfo, $options = '')
+    {
+        /** @var int $handle */
+        $handle = $this->pdfLib->open_pdi_document((string)$fileInfo, $options);
+
+        if (!$handle) {
+            $this->throwLastError();
+        }
+
+        return new PdiDocument($this->pdfLib, $handle);
+    }
+
+    /**
+     * Open a disk-based or virtual image file subject to various options.
+     *
+     * @param string $imagetype
+     * @param string $filename
+     * @param string $options
+     * @return Image
+     * @throws Exception
+     */
+    public function loadImage($imagetype, $filename, $options)
+    {
+        /** @var int $handle */
+        $handle = $this->pdfLib->load_image($imagetype, $filename, $options);
+
+        if (!$handle) {
+            $this->throwLastError();
+        }
+
+        return new Image($this->pdfLib, $handle);
+    }
+
+    /**
      * Create a virtual file with the given contents and open a PDF import document from that file.
      * @param string $inputPdf The PDF contents.
      * @param string $virtualFilename The filename for the PDFlib virtual file.
@@ -128,52 +185,6 @@ class PdfLibWrapper
     }
 
     /**
-     * Create a named virtual read-only file from data provided in memory.
-     *
-     * @param string $filename
-     * @param string $data
-     * @param string $options
-     * @return VirtualFile
-     * @throws Exception if the virtual file could not be created.
-     */
-    public function createVirtualFile($filename, $data, $options = '')
-    {
-        $file = VirtualFile::create($this->pdfLib, $filename, $data, $options);
-
-        return $file;
-    }
-
-    /**
-     * Open a disk-based or virtual PDF document and prepare it for later use.
-     *
-     * @param string|VirtualFile|\SplFileInfo $fileInfo An object convertible to a string that identifies a file (or PDFlib virtual file).
-     * @param string $options PDFlib options. See PDFLib API Reference, Options for PDF_open_pdi_document( ).
-     * @return PdiDocument The PDI document.
-     * @throws Exception if the PDI document could not be opened.
-     */
-    public function openPdiDocument($fileInfo, $options = '')
-    {
-        /** @var int $handle */
-        $handle = $this->pdfLib->open_pdi_document((string)$fileInfo, $options);
-
-        if (!$handle) {
-            $this->throwLastError();
-        }
-
-        return new PdiDocument($this->pdfLib, $handle);
-    }
-
-    /**
-     * Get the text of the last thrown exception or the reason of a failed function call.
-     *
-     * @return string Text containing the description of the most recent error condition.
-     */
-    public function getLastErrorMessage()
-    {
-        return $this->pdfLib->get_errmsg();
-    }
-
-    /**
      * @param string $title
      */
     public function setTitle($title)
@@ -195,27 +206,6 @@ class PdfLibWrapper
     public function setAuthor($author)
     {
         $this->pdfLib->set_info(self::META_AUTHOR, $author);
-    }
-
-    /**
-     * Open a disk-based or virtual image file subject to various options.
-     *
-     * @param string $imagetype
-     * @param string $filename
-     * @param string $options
-     * @return Image
-     * @throws Exception
-     */
-    public function loadImage($imagetype, $filename, $options)
-    {
-        /** @var int $handle */
-        $handle = $this->pdfLib->load_image($imagetype, $filename, $options);
-
-        if (!$handle) {
-            $this->throwLastError();
-        }
-
-        return new Image($this->pdfLib, $handle);
     }
 
     /**
@@ -252,6 +242,16 @@ class PdfLibWrapper
     public function stroke()
     {
         $this->pdfLib->stroke();
+    }
+
+    /**
+     * Get the text of the last thrown exception or the reason of a failed function call.
+     *
+     * @return string Text containing the description of the most recent error condition.
+     */
+    public function getLastErrorMessage()
+    {
+        return $this->pdfLib->get_errmsg();
     }
 
     /**
