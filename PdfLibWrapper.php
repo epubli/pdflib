@@ -90,14 +90,6 @@ class PdfLibWrapper
     }
 
     /**
-     * @return string
-     */
-    public function output()
-    {
-        return $this->pdfLib->get_buffer();
-    }
-
-    /**
      * Create a new PDF file subject to various options.
      *
      * @param string $filename Absolute or relative name of the PDF output file to be generated. If
@@ -135,6 +127,16 @@ class PdfLibWrapper
     public function endDocument($options = '')
     {
         $this->pdfLib->end_document($options);
+    }
+
+    /**
+     * Get the contents of the PDF output buffer.
+     *
+     * @return string
+     */
+    public function getBuffer()
+    {
+        return $this->pdfLib->get_buffer();
     }
 
     /**
