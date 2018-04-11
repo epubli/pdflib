@@ -11,7 +11,6 @@ use PDFlib;
  */
 class PdfLibWrapper
 {
-    const NUMBER_OF_PAGES = 'length:pages';
     const ADJUST_PAGE = 'adjustpage';
     const BOX_TYPE_CROP = 'crop';
     const PDF_MIN_VERSION = 14;
@@ -109,17 +108,6 @@ class PdfLibWrapper
     public function getBuffer()
     {
         return $this->pdfLib->get_buffer();
-    }
-
-    /**
-     * @param PdiDocument $pdiDocument
-     * @return int
-     * @deprecated Use OOP!
-     */
-    public function getLastPageNumber(PdiDocument $pdiDocument)
-    {
-        $lastPageNumber = (int)$this->pdfLib->pcos_get_number($pdiDocument->getHandle(), self::NUMBER_OF_PAGES);
-        return $lastPageNumber;
     }
 
     /**

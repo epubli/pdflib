@@ -94,4 +94,13 @@ class Document
 
         return $height;
     }
+
+    /**
+     * Get the number of pages of this Document.
+     * @return int
+     */
+    public function getNumberOfPages()
+    {
+        return (int)$this->lib->pcos_get_number($this->handle, 'length:pages');
+    }
 }
