@@ -2,6 +2,7 @@
 
 namespace Epubli\Pdf\PdfLib\PdfImport;
 
+use Epubli\Pdf\PdfLib\Exception;
 use Epubli\Pdf\PdfLib\VirtualFile;
 
 /**
@@ -33,15 +34,6 @@ class Document
         $this->close();
     }
 
-    /**
-     * Get the handle of this document.
-     * @deprecated We want to keep that handle private. Implement object-oriented methods instead.
-     */
-    public function getHandle()
-    {
-        return $this->handle;
-    }
-
     public function close()
     {
         if ($this->handle) {
@@ -58,6 +50,23 @@ class Document
     public function holdFile(VirtualFile $file)
     {
         $this->heldFile = $file;
+    }
+
+    /**
+     * @param int $pageNumber
+     * @param string $options
+     * @return Page
+     * @throws Exception
+     */
+    public function openPage($pageNumber, $options = '')
+    {
+        $handle = $this->lib->open_pdi_page($this->handle, $pageNumber, $options);
+
+        if (!$handle) {
+            $this->throwLastError();
+        }
+
+        return new Page($this->lib, $handle);
     }
 
     /**
@@ -102,5 +111,13 @@ class Document
     public function getNumberOfPages()
     {
         return (int)$this->lib->pcos_get_number($this->handle, 'length:pages');
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function throwLastError()
+    {
+        throw new Exception($this->lib->get_errmsg());
     }
 }

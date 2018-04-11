@@ -3,7 +3,6 @@
 namespace Epubli\Pdf\PdfLib;
 
 use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
-use Epubli\Pdf\PdfLib\PdfImport\Page as PdiPage;
 use PDFlib;
 
 /**
@@ -11,7 +10,6 @@ use PDFlib;
  */
 class PdfLibWrapper
 {
-    const ADJUST_PAGE = 'adjustpage';
     const BOX_TYPE_CROP = 'crop';
     const PDF_MIN_VERSION = 14;
 
@@ -111,34 +109,6 @@ class PdfLibWrapper
     }
 
     /**
-     * @param PdiDocument $pdiDocument
-     * @param int $pageNo
-     * @param string $options
-     * @return PdiPage
-     * @throws Exception
-     * @deprecated Use OOP!
-     */
-    public function openPdiPage(PdiDocument $pdiDocument, $pageNo, $options = "")
-    {
-        $handle = $this->pdfLib->open_pdi_page($pdiDocument->getHandle(), $pageNo, $options);
-
-        if (!$handle) {
-            $this->throwLastError();
-        }
-
-        return new PdiPage($this->pdfLib, $handle);
-    }
-
-    /**
-     * @param PdiPage $pdiPage
-     * @deprecated Use OOP!
-     */
-    public function closePdiPage(PdiPage $pdiPage)
-    {
-        $this->pdfLib->close_pdi_page($pdiPage->getHandle());
-    }
-
-    /**
      * @param $pageWidth
      * @param $pageHeight
      * @param string $options
@@ -163,23 +133,11 @@ class PdfLibWrapper
      * @param double $x
      * @param double $y
      * @param string $optlist
+     * @TODO: Wrap this in an Image class.
      */
     public function fitImage($image, $x, $y, $optlist)
     {
         $this->pdfLib->fit_image($image, $x, $y, $optlist);
-    }
-
-    /**
-     * Place an imported PDF page on the page subject to various options.
-     *
-     * @param PdiPage $page
-     * @param int $xPos
-     * @param int $yPos
-     * @param string $options
-     */
-    public function fitPdiPage(PdiPage $page, $xPos = 0, $yPos = 0, $options = self::ADJUST_PAGE)
-    {
-        $this->pdfLib->fit_pdi_page($page->getHandle(), $xPos, $yPos, $options);
     }
 
     /**
@@ -216,15 +174,6 @@ class PdfLibWrapper
         }
 
         return new PdiDocument($this->pdfLib, $handle);
-    }
-
-    /**
-     * @param PdiDocument $pdiDocument
-     * @deprecated Use $pdiDocument->close();
-     */
-    public function closePdiDocument(PdiDocument $pdiDocument)
-    {
-        $pdiDocument->close();
     }
 
     /**
@@ -268,6 +217,7 @@ class PdfLibWrapper
      * @param string $filename
      * @param string $optlist
      * @return int An image handle, or -1 (in PHP: 0) on error.
+     * @TODO Return an instance of an Image wrapper class.
      */
     public function loadImage($imagetype, $filename, $optlist)
     {
