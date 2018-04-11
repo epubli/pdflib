@@ -98,16 +98,33 @@ class PdfLibWrapper
     }
 
     /**
-     * @param PdiDocument $pdiDocument
-     * TODO: Pass PDF version as parameter rather than the whole document since the former is what we actually need. Makes the interface much slimmer and self-explaining.
+     * Create a new PDF file subject to various options.
+     *
+     * @param string $filename Absolute or relative name of the PDF output file to be generated. If
+     * filename is empty, the PDF document will be generated in memory instead of on file, and the
+     * generated PDF data must be fetched by the client with getBuffer()
+     * @param string $options
+     * @return bool false on error, and true otherwise.
      * TODO: I’m afraid usage of this method restrains this service from opening multiple documents at a time. NOT GOOD!
      */
-    public function beginDocument(PdiDocument $pdiDocument)
+    public function beginDocument($filename = '', $options = '')
     {
-        $this->pdfLib->begin_document(
-            '',
-            sprintf('compatibility=%.1f', $this->getPdfVersion($pdiDocument->getHandle()))
-        );
+        return (bool)$this->pdfLib->begin_document($filename, $options);
+    }
+
+    /**
+     * Create a new PDF file with a certain PDF version.
+     *
+     * @param int $version
+     * @param string $filename
+     * @return bool false on error, and true otherwise.
+     */
+    public function beginDocumentWithVersion($version, $filename = '')
+    {
+        // Use at least the minimum supported version.
+        $version = max(self::PDF_MIN_VERSION, $version);
+
+        return $this->beginDocument($filename, sprintf('compatibility=%.1f', $version/10));
     }
 
     /**
@@ -118,18 +135,6 @@ class PdfLibWrapper
     public function endDocument($options = '')
     {
         $this->pdfLib->end_document($options);
-    }
-
-    /**
-     * @param PdiDocument $pdiDocument
-     * @return float|int
-     * @deprecated Use OOP!
-     */
-    public function getPdfVersion(PdiDocument $pdiDocument)
-    {
-        $pdiVersion = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pdfversion');
-        $version = max(self::PDF_MIN_VERSION, $pdiVersion);
-        return $version/10;
     }
 
     /**

@@ -59,4 +59,13 @@ class Document
     {
         $this->heldFile = $file;
     }
+
+    /**
+     * The PDF version of this Document as an integer (17 is for PDF 1.7).
+     * @return int
+     */
+    public function getPdfVersion()
+    {
+        return (int)$this->lib->pcos_get_number($this->handle, 'pdfversion');
+    }
 }
