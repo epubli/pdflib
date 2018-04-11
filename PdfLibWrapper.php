@@ -66,7 +66,6 @@ class PdfLibWrapper
      * generated PDF data must be fetched by the client with getBuffer()
      * @param string $options
      * @return bool false on error, and true otherwise.
-     * TODO: I’m afraid usage of this method restrains this service from opening multiple documents at a time. NOT GOOD!
      */
     public function beginDocument($filename = '', $options = '')
     {
@@ -109,6 +108,7 @@ class PdfLibWrapper
     }
 
     /**
+     * Add a new page to the document and specify various options.
      * @param $pageWidth
      * @param $pageHeight
      * @param string $options
@@ -119,25 +119,12 @@ class PdfLibWrapper
     }
 
     /**
+     * Finish a page and apply various options.
      * @param string $options
      */
     public function endPageExt($options = "")
     {
         $this->pdfLib->end_page_ext($options);
-    }
-
-    /**
-     * Place an image or template on the page, subject to various options.
-     *
-     * @param int $image
-     * @param double $x
-     * @param double $y
-     * @param string $optlist
-     * @TODO: Wrap this in an Image class.
-     */
-    public function fitImage($image, $x, $y, $optlist)
-    {
-        $this->pdfLib->fit_image($image, $x, $y, $optlist);
     }
 
     /**
@@ -215,16 +202,20 @@ class PdfLibWrapper
      *
      * @param string $imagetype
      * @param string $filename
-     * @param string $optlist
-     * @return int An image handle, or -1 (in PHP: 0) on error.
-     * @TODO Return an instance of an Image wrapper class.
+     * @param string $options
+     * @return Image
+     * @throws Exception
      */
-    public function loadImage($imagetype, $filename, $optlist)
+    public function loadImage($imagetype, $filename, $options)
     {
         /** @var int $handle */
-        $handle = $this->pdfLib->load_image($imagetype, $filename, $optlist);
+        $handle = $this->pdfLib->load_image($imagetype, $filename, $options);
 
-        return $handle;
+        if (!$handle) {
+            $this->throwLastError();
+        }
+
+        return new Image($this->pdfLib, $handle);
     }
 
     /**
