@@ -21,6 +21,12 @@ class PdfLibWrapper
     const META_AUTHOR = 'Author';
 
     /**
+     * @deprecated Poschi used these options for open_pdi_document everywhere but did not explain why.
+     * @TODO: Figure out if this is really needed.
+     */
+    const POSCHIS_UNDOCUMENTED_OPTIONS = 'infomode=false requiredmode=minimum';
+
+    /**
      * @var PDFlib
      */
     protected $pdfLib;
@@ -38,23 +44,28 @@ class PdfLibWrapper
     }
 
     /**
+     * Create a virtual file with the given contents and open a PDF import document from that file.
      * @param string $inputPdf The PDF contents.
      * @param string $virtualFilename The filename for the PDFlib virtual file.
+     * @param string $options PDFlib options.
      * @return PdiDocument The PDI document.
-     * @throws Exception if the PDI document could not be opened.
+     * @throws Exception if the PDI document could not be opened or the virtual file could not be created.
      */
-    public function getPdiDocumentFromRawPdf($inputPdf, $virtualFilename)
+    public function getPdiDocumentFromRawPdf($inputPdf, $virtualFilename, $options = self::POSCHIS_UNDOCUMENTED_OPTIONS)
     {
-        $this->pdfLib->create_pvf($virtualFilename, $inputPdf, "");
+        $vFile = $this->createVirtualFile($virtualFilename, $inputPdf);
+        $pdiDocument = $this->openPdiDocument($vFile, $options);
+        // Make the Document responsible for deleting the VirtualFile.
+        $pdiDocument->holdFile($vFile);
 
-        return $this->openPdiDocument($virtualFilename, 'infomode=false requiredmode=minimum');
+        return $pdiDocument;
     }
 
     /**
      * @param PdiDocument $pdiDocument
      * @param int $pageNumber
      * @return int|float
-     * @deprecated: Use OOP!
+     * @deprecated Use OOP!
      */
     public function getPageWidth(PdiDocument $pdiDocument, $pageNumber = 1)
     {
@@ -68,7 +79,7 @@ class PdfLibWrapper
      * @param PdiDocument $pdiDocument
      * @param int $pageNumber
      * @return int|float
-     * @deprecated: Use OOP!
+     * @deprecated Use OOP!
      */
     public function getPageHeight(PdiDocument $pdiDocument, $pageNumber = 1)
     {
@@ -102,7 +113,7 @@ class PdfLibWrapper
     /**
      * @param PdiDocument $pdiDocument
      * @return float|int
-     * @deprecated: Use OOP!
+     * @deprecated Use OOP!
      */
     public function getPdfVersion(PdiDocument $pdiDocument)
     {
@@ -121,8 +132,6 @@ class PdfLibWrapper
     {
         $pdiDocument->close();
 
-        $this->pdfLib->delete_pvf($virtualFilename);
-
         if ($endDocument) {
             $this->pdfLib->end_document('');
         }
@@ -131,7 +140,7 @@ class PdfLibWrapper
     /**
      * @param PdiDocument $pdiDocument
      * @return int
-     * @deprecated: Use OOP!
+     * @deprecated Use OOP!
      */
     public function getLastPageNumber(PdiDocument $pdiDocument)
     {
@@ -145,7 +154,7 @@ class PdfLibWrapper
      * @param string $options
      * @return PdiPage
      * @throws Exception
-     * @deprecated: Use OOP!
+     * @deprecated Use OOP!
      */
     public function openPdiPage(PdiDocument $pdiDocument, $pageNo, $options = "")
     {
@@ -160,6 +169,7 @@ class PdfLibWrapper
 
     /**
      * @param PdiPage $pdiPage
+     * @deprecated Use OOP!
      */
     public function closePdiPage(PdiPage $pdiPage)
     {
@@ -211,17 +221,33 @@ class PdfLibWrapper
     }
 
     /**
+     * Create a named virtual read-only file from data provided in memory.
+     *
+     * @param string $filename
+     * @param string $data
+     * @param string $options
+     * @return VirtualFile
+     * @throws Exception if the virtual file could not be created.
+     */
+    public function createVirtualFile($filename, $data, $options = '')
+    {
+        $file = VirtualFile::create($this->pdfLib, $filename, $data, $options);
+
+        return $file;
+    }
+
+    /**
      * Open a disk-based or virtual PDF document and prepare it for later use.
      *
-     * @param string $filename The filename (real file or PDFlib virtual file).
-     * @param string $options PDFlib options
+     * @param string|VirtualFile|\SplFileInfo $fileInfo An object convertible to a string that identifies a file (or PDFlib virtual file).
+     * @param string $options PDFlib options. See PDFLib API Reference, Options for PDF_open_pdi_document( ).
      * @return PdiDocument The PDI document.
      * @throws Exception if the PDI document could not be opened.
      */
-    public function openPdiDocument($filename, $options = '')
+    public function openPdiDocument($fileInfo, $options = '')
     {
         /** @var int $handle */
-        $handle = $this->pdfLib->open_pdi_document($filename, $options);
+        $handle = $this->pdfLib->open_pdi_document((string)$fileInfo, $options);
 
         if (!$handle) {
             $this->throwLastError();
@@ -232,7 +258,7 @@ class PdfLibWrapper
 
     /**
      * @param PdiDocument $pdiDocument
-     * @deprecated: Use $pdiDocument->close();
+     * @deprecated Use $pdiDocument->close();
      */
     public function closePdiDocument(PdiDocument $pdiDocument)
     {

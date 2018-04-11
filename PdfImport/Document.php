@@ -2,6 +2,8 @@
 
 namespace Epubli\Pdf\PdfLib\PdfImport;
 
+use Epubli\Pdf\PdfLib\VirtualFile;
+
 /**
  * Class PdiDocument: A wrapper for a
  * PDI ({@link https://www.pdflib.com/en/produkte/pdflib-9-familie/pdflib-pdi/ PDF Import Library}) document
@@ -17,6 +19,9 @@ class Document
     /** @var int The handle retrieved from PDFLib. */
     private $handle;
 
+    /** @var VirtualFile The virtual file this document is read from and that it is responsible to delete when closing. */
+    private $heldFile;
+
     public function __construct(\PDFlib $lib, $handle)
     {
         $this->lib = $lib;
@@ -30,7 +35,7 @@ class Document
 
     /**
      * Get the handle of this document.
-     * @deprecated: We want to keep that handle private. Implement object-oriented methods instead.
+     * @deprecated We want to keep that handle private. Implement object-oriented methods instead.
      */
     public function getHandle()
     {
@@ -42,7 +47,16 @@ class Document
         if ($this->handle) {
             $this->lib->close_pdi_document($this->handle);
         }
+        if ($this->heldFile) {
+            $this->heldFile->delete();
+        }
 
         $this->handle = null;
+        $this->heldFile = null;
+    }
+
+    public function holdFile(VirtualFile $file)
+    {
+        $this->heldFile = $file;
     }
 }

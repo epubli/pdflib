@@ -25,7 +25,7 @@ class Page
 
     /**
      * Get the handle of this document.
-     * @deprecated: We want to keep that handle private. Implement object-oriented methods instead.
+     * @deprecated We want to keep that handle private. Implement object-oriented methods instead.
      */
     public function getHandle()
     {
