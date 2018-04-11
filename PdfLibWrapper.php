@@ -111,6 +111,16 @@ class PdfLibWrapper
     }
 
     /**
+     * Close the generated PDF document and apply various options.
+     *
+     * @param string $options
+     */
+    public function endDocument($options = '')
+    {
+        $this->pdfLib->end_document($options);
+    }
+
+    /**
      * @param PdiDocument $pdiDocument
      * @return float|int
      * @deprecated Use OOP!
@@ -120,21 +130,6 @@ class PdfLibWrapper
         $pdiVersion = $this->pdfLib->pcos_get_number($pdiDocument->getHandle(), 'pdfversion');
         $version = max(self::PDF_MIN_VERSION, $pdiVersion);
         return $version/10;
-    }
-
-    /**
-     * @param PdiDocument $pdiDocument
-     * @param string $virtualFilename
-     * @param bool $endDocument
-     * @deprecated: Use OOP!
-     */
-    public function closeDocument(PdiDocument $pdiDocument, $virtualFilename, $endDocument = true)
-    {
-        $pdiDocument->close();
-
-        if ($endDocument) {
-            $this->pdfLib->end_document('');
-        }
     }
 
     /**
