@@ -99,15 +99,15 @@ class PdfLibWrapper
 
     /**
      * Create a virtual file with the given contents and open a PDF import document from that file.
-     * @param string $inputPdf The PDF contents.
+     * @param string $fileContents The PDF contents.
      * @param string $virtualFilename The filename for the PDFlib virtual file.
      * @param string $options PDFlib options.
      * @return PdiDocument The PDI document.
      * @throws Exception if the PDI document could not be opened or the virtual file could not be created.
      */
-    public function getPdiDocumentFromRawPdf($inputPdf, $virtualFilename, $options = self::POSCHIS_UNDOCUMENTED_OPTIONS)
+    public function openPdiDocumentWithVirtualFile($fileContents, $virtualFilename, $options = self::POSCHIS_UNDOCUMENTED_OPTIONS)
     {
-        $vFile = $this->createVirtualFile($virtualFilename, $inputPdf);
+        $vFile = $this->createVirtualFile($virtualFilename, $fileContents);
         $pdiDocument = $this->openPdiDocument($vFile, $options);
         // Make the Document responsible for deleting the VirtualFile.
         $pdiDocument->holdFile($vFile);
