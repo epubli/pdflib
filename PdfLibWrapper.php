@@ -29,14 +29,19 @@ class PdfLibWrapper
     protected $pdfLib;
 
     /**
-     * @param PDFlib $PdfLib
+     * @param PDFlib $pdfLib
      * @param string $licenseKey
+     * @throws Exception
      */
-    public function __construct(PDFlib $PdfLib, $licenseKey = null)
+    public function __construct(PDFlib $pdfLib, $licenseKey = null)
     {
-        $this->pdfLib = $PdfLib;
+        $this->pdfLib = $pdfLib;
         if ($licenseKey) {
-            $this->pdfLib->set_option('license=' . $licenseKey);
+            try {
+                $this->pdfLib->set_option('license=' . $licenseKey);
+            } catch (\PDFlibException $ex) {
+                throw new Exception($ex->getMessage(), 0, $ex);
+            }
         }
     }
 
