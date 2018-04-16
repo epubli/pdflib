@@ -6,7 +6,8 @@ use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
 use PDFlib;
 
 /**
- * @SuppressWarnings(PHPMD.TooManyMethods)
+ * Class PdfLibWrapper A wrapper for a PDFLib object.
+ * @package Epubli\Pdf\PdfLib
  */
 class PdfLibWrapper
 {
@@ -28,20 +29,24 @@ class PdfLibWrapper
      */
     protected $pdfLib;
 
-    /**
-     * @param PDFlib $pdfLib
-     * @param string $licenseKey
-     * @throws Exception
-     */
-    public function __construct(PDFlib $pdfLib, $licenseKey = null)
+    public function __construct()
     {
-        $this->pdfLib = $pdfLib;
-        if ($licenseKey) {
-            try {
-                $this->pdfLib->set_option('license=' . $licenseKey);
-            } catch (\PDFlibException $ex) {
-                throw new Exception($ex->getMessage(), 0, $ex);
-            }
+        $this->pdfLib = new PDFlib();
+    }
+
+    /**
+     * @param string $licenseKey The license key.
+     * @throws Exception if key is invalid.
+     */
+    public function setLicenseKey($licenseKey)
+    {
+        if (!$licenseKey) {
+            return;
+        }
+        try {
+            $this->pdfLib->set_option('license=' . $licenseKey);
+        } catch (\PDFlibException $ex) {
+            throw new Exception($ex->getMessage(), 0, $ex);
         }
     }
 
