@@ -4,6 +4,7 @@ namespace Epubli\Pdf\PdfLib;
 
 use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
 use PDFlib;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class PdfLibWrapper A wrapper for a PDFLib object.
@@ -24,14 +25,18 @@ class PdfLibWrapper
      */
     const POSCHIS_UNDOCUMENTED_OPTIONS = 'infomode=false requiredmode=minimum';
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /** @var PDFlib The wrapped PDFLib object. */
     private $pdfLib;
 
     /** @var array A list of the names of all virtual files is use. */
     private $virtualFileNames = [];
 
-    public function __construct()
+    public function __construct(LoggerInterface $logger)
     {
+        $this->logger = $logger;
         $this->pdfLib = new PDFlib();
     }
 
