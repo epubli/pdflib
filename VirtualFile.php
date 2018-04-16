@@ -2,7 +2,7 @@
 
 namespace Epubli\Pdf\PdfLib;
 
-use Epubli\Common\Tools\StringTools;
+use PDFlibException;
 
 /**
  * Class VirtualFile: A wrapper for a virtual file managed by PDFLib.
@@ -41,32 +41,14 @@ class VirtualFile
 
     /**
      * @param \PDFlib $lib
-     * @param string $namePrefix The actual filename will start with
+     * @param string $name
      * @param string $data
-     * @param string $options
      * @return VirtualFile
-     * @throws Exception
+     * @throws PDFlibException
      */
-    public static function create(\PDFlib $lib, $namePrefix, $data, $options)
+    public static function create(\PDFlib $lib, $name, $data)
     {
-        $name = $namePrefix;
-        $counter = 0;
-        do {
-            $alreadyExists = false;
-            try {
-                $lib->create_pvf($name, $data, $options);
-            } catch (\Exception $ex) {
-                $msg = $ex->getMessage();
-                if (StringTools::contains($msg, 'already exists')) {
-                    // Handle "Couldn't create virtual file '…' (name already exists)":
-                    $alreadyExists = true;
-                    $name = $namePrefix . '.' . ++$counter;
-                } else {
-                    // Cannot handle different exceptions here.
-                    throw new Exception("Could not create virtual file $name ($msg)", 0, $ex);
-                }
-            }
-        } while ($alreadyExists);
+        $lib->create_pvf($name, $data, '');
 
         return new self($lib, $name);
     }

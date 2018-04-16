@@ -24,10 +24,11 @@ class PdfLibWrapper
      */
     const POSCHIS_UNDOCUMENTED_OPTIONS = 'infomode=false requiredmode=minimum';
 
-    /**
-     * @var PDFlib
-     */
-    protected $pdfLib;
+    /** @var PDFlib The wrapped PDFLib object. */
+    private $pdfLib;
+
+    /** @var array A list of the names of all virtual files is use. */
+    private $virtualFileNames = [];
 
     public function __construct()
     {
@@ -53,15 +54,30 @@ class PdfLibWrapper
     /**
      * Create a named virtual read-only file from data provided in memory.
      *
-     * @param string $filename
+     * @param string $prefix
      * @param string $data
-     * @param string $options
      * @return VirtualFile
-     * @throws Exception if the virtual file could not be created.
+     * @throws Exception If the given data is empty.
+     * @throws \PDFlibException
      */
-    public function createVirtualFile($filename, $data, $options = '')
+    public function createVirtualFile($prefix, $data)
     {
-        $file = VirtualFile::create($this->pdfLib, $filename, $data, $options);
+        if (empty($data)) {
+            throw new Exception('Cannot create empty virtual file!');
+        }
+
+        // Get the next free filename.
+        // We handle this here rather than letting PDFLib throw an exception.
+        // (PDFLib seems to only be able to throw one single exception after which it enters some invalid state.
+        // Therefore PDFLibExceptions should be avoided. FTR: Option errorpolicy=return does not work with create_pvf.)
+        $counter = 0;
+        $filename = $prefix;
+        while (in_array($filename, $this->virtualFileNames)) {
+            $filename = $prefix . '.' . ++$counter;
+        }
+
+        $file = VirtualFile::create($this->pdfLib, $filename, $data);
+        $this->virtualFileNames[] = $filename;
 
         return $file;
     }
