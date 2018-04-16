@@ -4,6 +4,7 @@ namespace Epubli\Pdf\PdfLib;
 
 use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
 use PDFlib;
+use PDFlibException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -42,18 +43,26 @@ class PdfLibWrapper
 
     /**
      * @param string $licenseKey The license key.
-     * @throws Exception if key is invalid.
      */
     public function setLicenseKey($licenseKey)
     {
         if (!$licenseKey) {
+            $this->logger->notice('Skipping empty license key.');
+
             return;
         }
+
+        // Try setting the license at another PDFLib object so we do not screw up our wrapped object.
+        $test = new PDFlib();
         try {
-            $this->pdfLib->set_option('license=' . $licenseKey);
-        } catch (\PDFlibException $ex) {
-            throw new Exception($ex->getMessage(), 0, $ex);
+            $test->set_option('license=' . $licenseKey);
+        } catch (PDFLibException $ex) {
+            $this->logger->warning('Skipping invalid license key!', ['exception' => $ex]);
+
+            return;
         }
+
+        $this->pdfLib->set_option('license=' . $licenseKey);
     }
 
     /**
