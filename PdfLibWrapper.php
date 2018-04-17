@@ -19,6 +19,7 @@ class PdfLibWrapper
     const META_TITLE = 'Title';
     const META_CREATOR = 'Creator';
     const META_AUTHOR = 'Author';
+    const VIRTUAL_FILE_DEFAULT_PREFIX = 'pvf';
 
     /**
      * @deprecated Poschi used these options for open_pdi_document everywhere but did not explain why.
@@ -79,6 +80,8 @@ class PdfLibWrapper
         if (empty($data)) {
             throw new Exception('Cannot create empty virtual file!');
         }
+
+        $prefix = (string)$prefix ?: self::VIRTUAL_FILE_DEFAULT_PREFIX;
 
         // Get the next free filename.
         // We handle this here rather than letting PDFLib throw an exception.
