@@ -73,14 +73,14 @@ class PdfLibWrapper
     /**
      * Create a named virtual read-only file from data provided in memory.
      *
-     * @param string $prefix
      * @param string $data
+     * @param string $prefix
      * @return VirtualFile
      * @throws Exception If the given data is empty.
      * @throws \PDFlibException If something unexpected happened. Option errorpolicy has no effect on creat_pvf.
      *      Since this might render our PDFLib object unusable we do not catch the exception.
      */
-    public function createVirtualFile($prefix, $data)
+    public function createVirtualFile($data, $prefix = null)
     {
         if (empty($data)) {
             throw new Exception('Cannot create empty virtual file!');
@@ -154,9 +154,12 @@ class PdfLibWrapper
      * @throws Exception if the PDI document could not be opened or the virtual file could not be created.
      * @throws PDFlibException
      */
-    public function openPdiDocumentWithVirtualFile($fileContents, $virtualFilename, $options = self::POSCHIS_UNDOCUMENTED_OPTIONS)
-    {
-        $vFile = $this->createVirtualFile($virtualFilename, $fileContents);
+    public function openPdiDocumentWithVirtualFile(
+        $fileContents,
+        $virtualFilename = null,
+        $options = self::POSCHIS_UNDOCUMENTED_OPTIONS
+    ) {
+        $vFile = $this->createVirtualFile($fileContents, $virtualFilename);
         $pdiDocument = $this->openPdiDocument($vFile, $options);
         // Make the Document responsible for deleting the VirtualFile.
         $pdiDocument->holdFile($vFile);
