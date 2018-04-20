@@ -6,7 +6,7 @@ use Epubli\Pdf\PdfLib\Exception;
 use Epubli\Pdf\PdfLib\VirtualFile;
 
 /**
- * Class PdiDocument: A wrapper for a
+ * Class Document: A wrapper for a
  * PDI ({@link https://www.pdflib.com/en/produkte/pdflib-9-familie/pdflib-pdi/ PDF Import Library}) document
  * handle retrieved from PDFLib.
  * @package Epubli\Pdf\PdfLib

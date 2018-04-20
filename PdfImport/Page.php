@@ -3,7 +3,7 @@
 namespace Epubli\Pdf\PdfLib\PdfImport;
 
 /**
- * Class PdiPage: A wrapper for a handle to a page of a
+ * Class Page: A wrapper for a handle to a page of a
  * PDI ({@link https://www.pdflib.com/en/produkte/pdflib-9-familie/pdflib-pdi/ PDF Import Library}) document
  * retrieved from PDFLib.
  * @package Epubli\Pdf\PdfLib
