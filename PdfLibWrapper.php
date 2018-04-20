@@ -43,14 +43,16 @@ class PdfLibWrapper
     }
 
     /**
+     * Set the license key.
      * @param string $licenseKey The license key.
+     * @return bool Whether the license key was successfully set.
      */
     public function setLicenseKey($licenseKey)
     {
         if (!$licenseKey) {
             $this->logger->notice('Skipping empty license key.');
 
-            return;
+            return false;
         }
 
         // Try setting the license at another PDFLib object so we do not screw up our wrapped object.
@@ -60,10 +62,12 @@ class PdfLibWrapper
         } catch (PDFLibException $ex) {
             $this->logger->warning('Skipping invalid license key!', ['exception' => $ex]);
 
-            return;
+            return false;
         }
 
         $this->pdfLib->set_option('license=' . $licenseKey);
+
+        return true;
     }
 
     /**
@@ -73,7 +77,8 @@ class PdfLibWrapper
      * @param string $data
      * @return VirtualFile
      * @throws Exception If the given data is empty.
-     * @throws \PDFlibException
+     * @throws \PDFlibException If something unexpected happened. Option errorpolicy has no effect on creat_pvf.
+     *      Since this might render our PDFLib object unusable we do not catch the exception.
      */
     public function createVirtualFile($prefix, $data)
     {
@@ -113,7 +118,7 @@ class PdfLibWrapper
         $handle = $this->pdfLib->open_pdi_document((string)$fileInfo, $options);
 
         if (!$handle) {
-            $this->throwLastError();
+            $this->throwLastError("Cannot open PDI document $fileInfo!");
         }
 
         return new PdiDocument($this->pdfLib, $handle);
@@ -122,19 +127,19 @@ class PdfLibWrapper
     /**
      * Open a disk-based or virtual image file subject to various options.
      *
-     * @param string $imagetype
-     * @param string $filename
+     * @param string|VirtualFile|\SplFileInfo $fileInfo
+     * @param string $type
      * @param string $options
      * @return Image
      * @throws Exception
      */
-    public function loadImage($imagetype, $filename, $options)
+    public function loadImage($fileInfo, $type = 'auto', $options = '')
     {
         /** @var int $handle */
-        $handle = $this->pdfLib->load_image($imagetype, $filename, $options);
+        $handle = $this->pdfLib->load_image($type, (string)$fileInfo, $options);
 
         if (!$handle) {
-            $this->throwLastError();
+            $this->throwLastError("Cannot load image $fileInfo!");
         }
 
         return new Image($this->pdfLib, $handle);
@@ -147,6 +152,7 @@ class PdfLibWrapper
      * @param string $options PDFlib options.
      * @return PdiDocument The PDI document.
      * @throws Exception if the PDI document could not be opened or the virtual file could not be created.
+     * @throws PDFlibException
      */
     public function openPdiDocumentWithVirtualFile($fileContents, $virtualFilename, $options = self::POSCHIS_UNDOCUMENTED_OPTIONS)
     {
@@ -298,10 +304,11 @@ class PdfLibWrapper
     }
 
     /**
+     * @param string $callerMessage
      * @throws Exception
      */
-    private function throwLastError()
+    private function throwLastError($callerMessage)
     {
-        throw new Exception($this->getLastErrorMessage());
+        throw new Exception($callerMessage . ' ' . $this->getLastErrorMessage());
     }
 }
