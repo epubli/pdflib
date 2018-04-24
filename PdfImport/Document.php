@@ -2,30 +2,37 @@
 
 namespace Epubli\Pdf\PdfLib\PdfImport;
 
+use Epubli\Pdf\PdfLib\Closable;
 use Epubli\Pdf\PdfLib\Exception;
-use Epubli\Pdf\PdfLib\VirtualFile;
+use Epubli\Pdf\PdfLib\File\VirtualFile;
+use Epubli\Pdf\PdfLib\LibObject;
+use Epubli\Pdf\PdfLib\Scope\RootObject;
 
 /**
  * Class Document: A wrapper for a
  * PDI ({@link https://www.pdflib.com/en/produkte/pdflib-9-familie/pdflib-pdi/ PDF Import Library}) document
- * handle retrieved from PDFLib.
+ * handle retrieved from PDFlib.
  * @package Epubli\Pdf\PdfLib
  * @author Simon Schrape <simon@epubli.com>
  */
-class Document
+class Document extends LibObject implements Closable
 {
-    /** @var \PDFlib The PDFLib bridge this object belongs to. */
-    private $lib;
+    /** @var RootObject The PDFlib root object that created this Document. */
+    private $root;
 
-    /** @var int The handle retrieved from PDFLib. */
+    /** @var int The handle retrieved from PDFlib. */
     private $handle;
 
     /** @var VirtualFile The virtual file this document is read from and that it is responsible to delete when closing. */
     private $heldFile;
 
-    public function __construct(\PDFlib $lib, $handle)
+    /** @var Page[] */
+    private $pages = [];
+
+    public function __construct(RootObject $root, $handle)
     {
-        $this->lib = $lib;
+        parent::__construct($root->getLib());
+        $this->root = $root;
         $this->handle = $handle;
     }
 
@@ -37,7 +44,10 @@ class Document
     public function close()
     {
         if ($this->handle) {
-            $this->lib->close_pdi_document($this->handle);
+            foreach ($this->pages as $page) {
+                $page->close();
+            }
+            $this->getLib()->close_pdi_document($this->handle);
         }
         if ($this->heldFile) {
             $this->heldFile->delete();
@@ -53,6 +63,7 @@ class Document
     }
 
     /**
+     * Open a Page of this Document.
      * @param int $pageNumber
      * @param string $options
      * @return Page
@@ -60,13 +71,15 @@ class Document
      */
     public function openPage($pageNumber, $options = '')
     {
-        $handle = $this->lib->open_pdi_page($this->handle, $pageNumber, $options);
-
+        $handle = $this->getLib()->open_pdi_page($this->handle, $pageNumber, $options);
         if (!$handle) {
-            $this->throwLastError();
+            $this->throwLastError("Could not open PDI Page #$pageNumber!");
         }
 
-        return new Page($this->lib, $handle);
+        $page = new Page($this->getLib(), $handle);
+        $this->pages[] = $page;
+
+        return $page;
     }
 
     /**
@@ -75,7 +88,7 @@ class Document
      */
     public function getPdfVersion()
     {
-        return (int)$this->lib->pcos_get_number($this->handle, 'pdfversion');
+        return (int)$this->getLib()->pcos_get_number($this->handle, 'pdfversion');
     }
 
     /**
@@ -86,7 +99,7 @@ class Document
     public function getPageWidth($pageNumber = 1)
     {
         /** @var int|float $width */
-        $width = $this->lib->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/width');
+        $width = $this->getLib()->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/width');
 
         return $width;
     }
@@ -99,7 +112,7 @@ class Document
     public function getPageHeight($pageNumber = 1)
     {
         /** @var int|float $height */
-        $height = $this->lib->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/height');
+        $height = $this->getLib()->pcos_get_number($this->handle, 'pages[' . ($pageNumber - 1) . ']/height');
 
         return $height;
     }
@@ -110,14 +123,6 @@ class Document
      */
     public function getNumberOfPages()
     {
-        return (int)$this->lib->pcos_get_number($this->handle, 'length:pages');
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function throwLastError()
-    {
-        throw new Exception($this->lib->get_errmsg());
+        return (int)$this->getLib()->pcos_get_number($this->handle, 'length:pages');
     }
 }

@@ -2,26 +2,27 @@
 
 namespace Epubli\Pdf\PdfLib\PdfImport;
 
+use Epubli\Pdf\PdfLib\Closable;
+use Epubli\Pdf\PdfLib\LibObject;
+use Epubli\Pdf\PdfLib\Scope\RootObject;
+
 /**
  * Class Page: A wrapper for a handle to a page of a
  * PDI ({@link https://www.pdflib.com/en/produkte/pdflib-9-familie/pdflib-pdi/ PDF Import Library}) document
- * retrieved from PDFLib.
+ * retrieved from PDFlib.
  * @package Epubli\Pdf\PdfLib
  * @author Simon Schrape <simon@epubli.com>
  */
-class Page
+class Page extends LibObject implements Closable
 {
     const OPTION_ADJUST_PAGE = 'adjustpage';
 
-    /** @var \PDFlib The PDFLib bridge this object belongs to. */
-    private $lib;
-
-    /** @var int The handle retrieved from PDFLib. */
+    /** @var int The handle retrieved from PDFlib. */
     private $handle;
 
     public function __construct(\PDFlib $lib, $handle)
     {
-        $this->lib = $lib;
+        parent::__construct($lib);
         $this->handle = $handle;
     }
 
@@ -32,8 +33,8 @@ class Page
 
     public function close()
     {
-        if ($this->handle) {
-            $this->lib->close_pdi_page($this->handle);
+        if ($this->handle && $this->getCurrentScope() > RootObject::SCOPE) {
+            $this->getLib()->close_pdi_page($this->handle);
         }
 
         $this->handle = null;
@@ -49,6 +50,6 @@ class Page
      */
     public function fitOnPage($x = 0, $y = 0, $options = self::OPTION_ADJUST_PAGE)
     {
-        $this->lib->fit_pdi_page($this->handle, $x, $y, $options);
+        $this->getLib()->fit_pdi_page($this->handle, $x, $y, $options);
     }
 }

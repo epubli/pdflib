@@ -1,23 +1,23 @@
 <?php
 
-namespace Epubli\Pdf\PdfLib;
+namespace Epubli\Pdf\PdfLib\File;
+
+use Epubli\Pdf\PdfLib\Closable;
+use Epubli\Pdf\PdfLib\LibObject;
 
 /**
- * Class Image: A wrapper for an image handle retrieved from PDFLib.
+ * Class Image: A wrapper for an image handle retrieved from PDFlib.
  * @package Epubli\Pdf\PdfLib
  * @author Simon Schrape <simon@epubli.com>
  */
-class Image
+class Image extends LibObject implements Closable
 {
-    /** @var \PDFlib The PDFLib bridge this object belongs to. */
-    private $lib;
-
-    /** @var int The handle retrieved from PDFLib. */
+    /** @var int The handle retrieved from PDFlib. */
     private $handle;
 
     public function __construct(\PDFlib $lib, $handle)
     {
-        $this->lib = $lib;
+        parent::__construct($lib);
         $this->handle = $handle;
     }
 
@@ -29,7 +29,7 @@ class Image
     public function close()
     {
         if ($this->handle) {
-            $this->lib->close_image($this->handle);
+            $this->getLib()->close_image($this->handle);
         }
 
         $this->handle = null;
@@ -45,6 +45,6 @@ class Image
      */
     public function fitOnPage($x = 0, $y = 0, $options = self::OPTION_ADJUST_PAGE)
     {
-        $this->lib->fit_image($this->handle, $x, $y, $options);
+        $this->getLib()->fit_image($this->handle, $x, $y, $options);
     }
 }

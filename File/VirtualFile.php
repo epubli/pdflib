@@ -1,19 +1,17 @@
 <?php
 
-namespace Epubli\Pdf\PdfLib;
+namespace Epubli\Pdf\PdfLib\File;
 
+use Epubli\Pdf\PdfLib\LibObject;
 use PDFlibException;
 
 /**
- * Class VirtualFile: A wrapper for a virtual file managed by PDFLib.
+ * Class VirtualFile: A wrapper for a virtual file managed by PDFlib.
  * @package Epubli\Pdf\PdfLib
  * @author Simon Schrape <simon@epubli.com>
  */
-class VirtualFile
+class VirtualFile extends LibObject
 {
-    /** @var \PDFlib The PDFLib bridge this object belongs to. */
-    private $lib;
-
     /** @var string The virtual filename */
     private $name;
 
@@ -23,9 +21,9 @@ class VirtualFile
      * @param \PDFlib $lib
      * @param string $name
      */
-    private function __construct(\PDFlib $lib, $name)
+    protected function __construct(\PDFlib $lib, $name)
     {
-        $this->lib = $lib;
+        parent::__construct($lib);
         $this->name = $name;
     }
 
@@ -61,7 +59,7 @@ class VirtualFile
     {
         $success = true;
         if ($this->name) {
-            $success = (bool)$this->lib->delete_pvf($this->name);
+            $success = (bool)$this->getLib()->delete_pvf($this->name);
             // Prevent double deletion.
             $this->name = null;
         }
