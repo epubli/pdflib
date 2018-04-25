@@ -8,7 +8,7 @@ use PDFlibException;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class Factory A factory for a PDFlib wrapped objects.
+ * Class Factory A factory for a PDFlib wrapped object.
  * @package Epubli\Pdf\PdfLib
  */
 class Factory

@@ -18,7 +18,7 @@ class RootObject extends ScopedObject
     const VIRTUAL_FILE_DEFAULT_PREFIX = 'pvf';
     const PDF_MIN_VERSION = 14;
 
-    /** @var array A list of the names of all virtual files is use. */
+    /** @var array A list of the names of all virtual files in use. */
     private $virtualFileNames = [];
 
     /** @var Document The PDF document currently being edited. */
