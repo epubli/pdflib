@@ -30,6 +30,9 @@ class Document extends ScopedObject implements Closable
     /** @var Closable[] */
     private $loadedObjects = [];
 
+    /** @var bool Whether this object is already closing. */
+    private $closing = false;
+
     protected function __construct(RootObject $parent, $filename = '', $options = '')
     {
         parent::__construct($parent->getLib());
@@ -38,6 +41,11 @@ class Document extends ScopedObject implements Closable
 
     public function __destruct()
     {
+        if ($this->closing) {
+            return;
+        }
+        $this->closing = true;
+
         $this->close();
     }
 
@@ -65,12 +73,12 @@ class Document extends ScopedObject implements Closable
      */
     public function finish($getBuffer = false, $options = '')
     {
-        if (!$this->parent) {
+        if ($this->closing) {
             return '';
         }
+        $this->closing = true;
 
         $this->parent->childScopeClosed();
-        $this->parent = null;
 
         foreach ($this->loadedObjects as $closable) {
             $closable->close();

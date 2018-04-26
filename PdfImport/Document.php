@@ -29,6 +29,9 @@ class Document extends LibObject implements Closable
     /** @var Page[] */
     private $pages = [];
 
+    /** @var bool Whether this object is already closing. */
+    private $closing = false;
+
     public function __construct(RootObject $root, $handle)
     {
         parent::__construct($root->getLib());
@@ -43,6 +46,11 @@ class Document extends LibObject implements Closable
 
     public function close()
     {
+        if ($this->closing) {
+            return;
+        }
+        $this->closing = true;
+
         if ($this->handle) {
             foreach ($this->pages as $page) {
                 $page->close();

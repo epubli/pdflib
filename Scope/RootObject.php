@@ -39,6 +39,13 @@ class RootObject extends ScopedObject
         parent::__construct($lib);
     }
 
+    public function __destruct()
+    {
+        if ($this->document) {
+            $this->document->close();
+        }
+    }
+
     /**
      * Create a named virtual read-only file from data provided in memory.
      *

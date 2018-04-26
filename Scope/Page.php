@@ -16,6 +16,9 @@ class Page extends ScopedObject implements Closable
     /** @var Document The Document containing this Page. */
     private $parent;
 
+    /** @var bool Whether this object is already closing. */
+    private $closing = false;
+
     /**
      * @param Document $parent
      * @param $pageWidth
@@ -46,12 +49,12 @@ class Page extends ScopedObject implements Closable
      */
     public function finish($options = '')
     {
-        if (!$this->parent) {
+        if ($this->closing) {
             return;
         }
+        $this->closing = true;
 
         $this->parent->childScopeClosed();
-        $this->parent = null;
 
         $this->getLib()->end_page_ext($options);
     }
