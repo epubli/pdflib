@@ -1,0 +1,23 @@
+{
+  "name": "epubli/pdflib",
+  "type": "library",
+  "description": "OOP wrapper for PHP binding of PDFlib.",
+  "keywords": ["Epubli", "PHP", "PDF", "PDFlib", "OOP", "wrapper"],
+  "homepage": "https://github.com/epubli/pdflib",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Simon Schrape",
+      "email": "simon@epubli.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.6",
+    "psr/log": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "Epubli\\Pdf\\PdfLib": "src/"
+    }
+  }
+}
