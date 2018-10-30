@@ -4,15 +4,17 @@ namespace Epubli\Pdf\PdfLib\Scope;
 
 use Epubli\Pdf\PdfLib\Exception;
 use Epubli\Pdf\PdfLib\PdfImport\Document as PdiDocument;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class RootObjectTest extends \PHPUnit_Framework_TestCase
+class RootObjectTest extends TestCase
 {
     const PATH_TO_MINIMAL_PDF = '../data/minimal.pdf';
     const PATH_TO_CORRUPT_PDF = '../data/corrupt.pdf';
     const PATH_TO_IMAGE = '../data/image.png';
 
     /**
-     * @expectedException Epubli\Pdf\PdfLib\Exception
+     * @expectedException \Epubli\Pdf\PdfLib\Exception
      * @expectedExceptionMessage Cannot create empty virtual file!
      * @throws \PDFlibException
      * @throws Exception
@@ -67,7 +69,7 @@ class RootObjectTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Epubli\Pdf\PdfLib\Exception
+     * @expectedException \Epubli\Pdf\PdfLib\Exception
      * @expectedExceptionMessage Cannot open PDI document
      * @throws Exception
      */
@@ -120,7 +122,7 @@ class RootObjectTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException Epubli\Pdf\PdfLib\Exception
+     * @expectedException \Epubli\Pdf\PdfLib\Exception
      * @expectedExceptionMessage There can be only one.
      * @throws Exception
      */
@@ -137,7 +139,7 @@ class RootObjectTest extends \PHPUnit_Framework_TestCase
      */
     public function testCreateDocumentWithVersion($version, $expectedOptlist)
     {
-        /** @var RootObject|\PHPUnit_Framework_MockObject_MockObject $wrapper */
+        /** @var RootObject|MockObject $wrapper */
         $wrapper = $this->createPartialMock(RootObject::class, ['createDocument']);
         $filename = 'somefile';
         $wrapper->expects($this->once())
